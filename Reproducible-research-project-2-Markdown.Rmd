@@ -3,9 +3,12 @@ title: "Reproducible-research-project-2-Markdown"
 author: "Ing. Greg Bennett"
 date: "August 30, 2017"
 output:
+  pdf_document: default
   html_document: default
 ---
+
 ```{r setup, include=FALSE}
+library(magrittr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -24,6 +27,12 @@ df <- read_csv("C:/Users/gbennett/Dropbox/Data Scientists/5.Reproducible_Researc
 
 To evaluate the health impact, the total fatalities and the total injuries for each event type (EVTYPE) are calculated. The codes for this calculation are:
 ```{r pressure, echo=FALSE}
+library(magrittr)
+library(dplyr)
+df.damage <- df %>% select(EVTYPE, PROPDMG,PROPDMGEXP,CROPDMG,CROPDMGEXP)
+
+Symbol <- sort(unique(as.character(df.damage$PROPDMGEXP)))
+Multiplier <- c(0,0,0,1,10,10,10,10,10,10,10,10,10,10^9,10^2,10^2,10^3,10^6,10^6)
 df.fatalities <- df %>% select(EVTYPE, FATALITIES) %>% group_by(EVTYPE) %>% summarise(total.fatalities = sum(FATALITIES)) %>% arrange(-total.fatalities)
 head(df.fatalities, 10)
 
@@ -34,6 +43,8 @@ df.damage <- df %>% select(EVTYPE, PROPDMG,PROPDMGEXP,CROPDMG,CROPDMGEXP)
 ```
 Economic impact:
 ```{r Impact, echo=FALSE}
+x<-cbind(Multiplier,Symbol)
+x<- as.data.frame(x)
  df.damage$Prop.Multiplier <- x$Multiplier[match(df.damage$PROPDMGEXP,x$Symbol)]
  df.damage$Prop.Multiplier <- x$Multiplier[match(df.damage$CROPDMGEXP,x$Symbol)]
  
@@ -44,8 +55,10 @@ Health Impact
 The **top 10 events** with the highest total fatalities and injuries are shown graphically.
 
 ```{r result}
-g <- ggplot(df.fatalities[1:10,], aes(x=reorder(EVTYPE, -total.fatalities), y=total.fatalities))+geom_bar(stat="identity") + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))+ggtitle("Top 10 Events with Highest Total Fatalities") +labs(x="EVENT TYPE", y="Total Fatalities")
-g <- ggplot(df.injuries[1:10,], aes(x=reorder(EVTYPE, -total.injuries), y=total.injuries))+geom_bar(stat="identity") + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))+ggtitle("Top 10 Events with Highest Total Injuries") +labs(x="EVENT TYPE", y="Total Injuries")
-g
+library(ggplot2)
+HTF <- ggplot(df.fatalities[1:10,], aes(x=reorder(EVTYPE, -total.fatalities), y=total.fatalities))+geom_bar(stat="identity") + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))+ggtitle("Top 10 Events with Highest Total Fatalities") +labs(x="EVENT TYPE", y="Total Fatalities")
+HTI <- ggplot(df.injuries[1:10,], aes(x=reorder(EVTYPE, -total.injuries), y=total.injuries))+geom_bar(stat="identity") + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))+ggtitle("Top 10 Events with Highest Total Injuries") +labs(x="EVENT TYPE", y="Total Injuries")
+HTF
+HTI
 
 ```
