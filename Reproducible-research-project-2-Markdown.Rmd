@@ -1,0 +1,51 @@
+---
+title: "Reproducible-research-project-2-Markdown"
+author: "Ing. Greg Bennett"
+date: "August 30, 2017"
+output:
+  html_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Data
+
+This is an **R Markdown** document contains the Peer-graded Assignment: Course Project 2. 
+Step 1
+You will need to download & save in a specific folder, see: <https://github.com/gbg184/reproducible-research-project-2-Markdown>.
+
+```{r read}
+library(readr)
+df <- read_csv("C:/Users/gbennett/Dropbox/Data Scientists/5.Reproducible_Research/project/repdata_data_StormData.csv")
+```
+
+## Process the data
+
+To evaluate the health impact, the total fatalities and the total injuries for each event type (EVTYPE) are calculated. The codes for this calculation are:
+```{r pressure, echo=FALSE}
+df.fatalities <- df %>% select(EVTYPE, FATALITIES) %>% group_by(EVTYPE) %>% summarise(total.fatalities = sum(FATALITIES)) %>% arrange(-total.fatalities)
+head(df.fatalities, 10)
+
+df.injuries <- df %>% select(EVTYPE, INJURIES) %>% group_by(EVTYPE) %>% summarise(total.injuries = sum(INJURIES)) %>% arrange(-total.injuries)
+head(df.injuries, 10)
+
+df.damage <- df %>% select(EVTYPE, PROPDMG,PROPDMGEXP,CROPDMG,CROPDMGEXP)
+```
+Economic impact:
+```{r Impact, echo=FALSE}
+ df.damage$Prop.Multiplier <- x$Multiplier[match(df.damage$PROPDMGEXP,x$Symbol)]
+ df.damage$Prop.Multiplier <- x$Multiplier[match(df.damage$CROPDMGEXP,x$Symbol)]
+ 
+```
+
+## Results
+Health Impact
+The **top 10 events** with the highest total fatalities and injuries are shown graphically.
+
+```{r result}
+g <- ggplot(df.fatalities[1:10,], aes(x=reorder(EVTYPE, -total.fatalities), y=total.fatalities))+geom_bar(stat="identity") + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))+ggtitle("Top 10 Events with Highest Total Fatalities") +labs(x="EVENT TYPE", y="Total Fatalities")
+g <- ggplot(df.injuries[1:10,], aes(x=reorder(EVTYPE, -total.injuries), y=total.injuries))+geom_bar(stat="identity") + theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))+ggtitle("Top 10 Events with Highest Total Injuries") +labs(x="EVENT TYPE", y="Total Injuries")
+g
+
+```
